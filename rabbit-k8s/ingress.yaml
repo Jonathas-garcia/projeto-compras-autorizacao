@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rabbitmq-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      location /rabbitmq/api/queues/ {
+          proxy_pass http://0.0.0.0:55672/api/queues/%2F/;
+      }
+      location /rabbitmq1/api/exchanges/ {
+          proxy_pass http://0.0.0.0:55672/api/exchanges/%2F/;
+      }
+      location /rabbitmq1/ {
+          proxy_pass http://0.0.0.0:55672/;
+      }
+  labels:
+    name: rabbitmq-ingress
+spec:
+  rules:
+    - host: "rabbit.devlocal.com"
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: rabbitmq-management
+                port:
+                  number: 15672
+
